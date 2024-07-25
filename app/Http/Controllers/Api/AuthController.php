@@ -20,72 +20,65 @@ class AuthController extends Controller
     }
 
     public function login(Request $request)
-    {
-        try {
-            $request->validate([
-                'email' => 'email|required',
-                'password' => 'required'
-            ]);
+{
+    try {
+        $request->validate([
+            'username' => 'required',
+            'password' => 'required'
+        ]);
 
-            $credentials = request(['email', 'password']);
-            if (!Auth::attempt($credentials)) {
-                return ResponseFormatter::error([
-                    'message' => 'Unauthorized'
-                ],'Authentication Failed', 500);
-            }
-
-            $user = User::where('email', $request->email)->first();
-            if ( ! Hash::check($request->password, $user->password, [])) {
-                throw new \Exception('Invalid Credentials');
-            }
-
-            $tokenResult = $user->createToken('authToken')->plainTextToken;
-            return ResponseFormatter::success([
-                'access_token' => $tokenResult,
-                'token_type' => 'Bearer',
-                'user' => $user
-            ],'Authenticated');
-        } catch (Exception $error) {
+        $credentials = $request->only('username', 'password');
+        if (!Auth::attempt($credentials)) {
             return ResponseFormatter::error([
-                'message' => 'Something went wrong',
-                'error' => $error,
-            ],'Authentication Failed', 500);
+                'message' => 'Invalid credentials'
+            ], 'Authentication Failed', 401);
         }
+
+        $user = User::where('username', $request->username)->first();
+        $tokenResult = $user->createToken('authToken')->plainTextToken;
+
+        return ResponseFormatter::success([
+            'access_token' => $tokenResult,
+            'token_type' => 'Bearer',
+            'user' => $user
+        ], 'Authenticated');
+    } catch (Exception $error) {
+        return ResponseFormatter::error([
+            'message' => 'Something went wrong',
+            'error' => $error->getMessage(),
+        ], 'Authentication Failed', 500);
     }
+}
 
-    public function register(Request $request)
-    {
-        try {
-            $request->validate([
-                'name' => ['required', 'string', 'max:255'],
-                'username' => ['required', 'string', 'max:255', 'unique:users'],
-                'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-                'password' => ['required', 'string', new Password]
-            ]);
+public function register(Request $request)
+{
+    try {
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'username' => ['required', 'string', 'max:255', 'unique:users'],
+            'password' => ['required', 'string', new Password]
+        ]);
 
-            User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'username' => $request->username,
-                'password' => Hash::make($request->password),
-            ]);
+        $user = User::create([
+            'name' => $request->name,
+            'username' => $request->username,
+            'password' => Hash::make($request->password),
+        ]);
 
-            $user = User::where('email', $request->email)->first();
+        $tokenResult = $user->createToken('authToken')->plainTextToken;
 
-            $tokenResult = $user->createToken('authToken')->plainTextToken;
-
-            return ResponseFormatter::success([
-                'access_token' => $tokenResult,
-                'token_type' => 'Bearer',
-                'user' => $user
-            ],'User Registered');
-        } catch (Exception $error) {
-            return ResponseFormatter::error([
-                'message' => 'Something went wrong',
-                'error' => $error,
-            ],'Authentication Failed', 500);
-        }
+        return ResponseFormatter::success([
+            'access_token' => $tokenResult,
+            'token_type' => 'Bearer',
+            'user' => $user
+        ], 'User Registered');
+    } catch (Exception $error) {
+        return ResponseFormatter::error([
+            'message' => 'Something went wrong',
+            'error' => $error->getMessage(),
+        ], 'Registration Failed', 500);
     }
+}
 
     public function logout(Request $request)
     {
