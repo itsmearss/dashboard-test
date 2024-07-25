@@ -92,14 +92,13 @@ class UserController extends Controller
             'username' => 'required',
             'name' => 'required',
             'email' => 'required|email',
-            'password' => 'nullable',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
         $user->username = $request->username;
         $user->name = $request->name;
         $user->email = $request->email;
-        if ($user->password) {
+        if ($request->password) {
             $user->password = Hash::make($request->password);
         }
 
