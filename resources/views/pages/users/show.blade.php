@@ -27,9 +27,13 @@
                         <div class="card author-box card-primary">
                             <div class="card-body">
                                 <div class="author-box-left">
-                                    <img alt="image"
+                                    @if ($user->photo)
+                                        <img alt="image"
                                         src="{{ asset('storage/photos/' . $user->photo) }}"
                                         class="rounded-circle author-box-picture">
+                                    @else
+                                        No Photo
+                                    @endif
                                     <div class="clearfix"></div>
                                     <a href='{{ route('users.edit', $user->id) }}'
                                         class="btn btn-sm btn-info btn-icon ml-2">
