@@ -37,6 +37,7 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        // validate
         $request->validate([
             'username' => 'required|unique:users',
             'name' => 'required',
@@ -45,6 +46,7 @@ class UserController extends Controller
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
+        // create user
         $user = new User();
         $user->username = $request->username;
         $user->name = $request->name;
@@ -85,6 +87,7 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
+        // validate
         $request->validate([
             'username' => 'required',
             'name' => 'required',
